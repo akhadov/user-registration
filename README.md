@@ -14,4 +14,6 @@ This project uses a PostgreSQL database
 * [Asp.Net Core Authentication Jwt Bearer](https://dotnet.microsoft.com/en-us/apps/aspnet)
 * [Microsoft Identity Model Tokens](https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet)
 
-  
+## Screenshots
+![User Registration api screenshot](img/screenshot_user_identity_accounts.png)
+![User Registration api screenshot](img/screenshot_user_identity_users.png)
