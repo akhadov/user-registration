@@ -24,30 +24,19 @@ namespace RegistrUser.WebApi.Controllers
         {
             return Ok(await _service.GetAllAsync(@params, p => p.ItemState == Enums.ItemState.Active));
         }
-        
+
+        [HttpGet("{id}"), Authorize(Roles = "RegistrUser")]
+        public async Task<IActionResult> GetAsync(long id)
+        {
+            return Ok(await _service.GetAsync(p => p.Id == id && p.ItemState == Enums.ItemState.Active));
+        }
+
         [HttpPatch(), Authorize(Roles = "RegistrUser")]
         public async Task<IActionResult> UpdateAsync([FromForm]UserPatchViewModel userCreateViewModel)
         {
             return Ok(await _service.UpdateAsync(userCreateViewModel));
         }
 
-        [HttpGet("user-info"), Authorize(Roles = "RegistrUser")]
-        public async Task<IActionResult> GetInfoAsync()
-        {
-            return Ok(await _service.GetInfoAsync());
-        }
-
-        [HttpGet("{id}"), Authorize(Roles = "RegistrUser, Admin")]
-        public async Task<IActionResult> GetAsync(long id)
-        {
-            return Ok(await _service.GetAsync(p => p.Id == id && p.ItemState == Enums.ItemState.Active));
-        }
-
-        [HttpDelete(), Authorize(Roles = "RegistrUser")]
-        public async Task<IActionResult> DeleteAsync()
-        {
-            return Ok(await _service.DeleteAsync());
-        }
 
         [HttpDelete("{id}"), Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteAsync(long id)

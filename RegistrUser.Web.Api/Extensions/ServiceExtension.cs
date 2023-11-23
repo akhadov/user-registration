@@ -20,17 +20,6 @@ namespace RegistrUser.WebApi.Extensions
             services.AddScoped<IVerifyEmailService, VerifyEmailService>();
         }
 
-        //public static string GetDbConnectionString(this IConfiguration configuration, string defaultConnection)
-        //{
-        //    var postgresUrl = configuration.GetSection("DATABASE_URL").Value;
-        //    if (string.IsNullOrEmpty(postgresUrl))
-        //        return configuration.GetConnectionString(defaultConnection);
-
-        //    var url = new Uri(postgresUrl, UriKind.Absolute);
-        //    return $"Host={url.Host};RegistrUser Id={url.UserInfo.Split(':')[0]};" +
-        //           $"Password={url.UserInfo.Split(':')[1]};Database={url.LocalPath[1..]};";
-        //}
-
         public static void AddJwtService(this IServiceCollection services, IConfiguration config)
         {
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
@@ -52,7 +41,7 @@ namespace RegistrUser.WebApi.Extensions
         {
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "BlogPost.Api", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "UserIdentity", Version = "v1" });
 
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {

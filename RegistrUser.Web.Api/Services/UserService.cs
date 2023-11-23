@@ -1,4 +1,5 @@
-﻿using RegistrUser.Service.ViewModels.Users;
+﻿using Microsoft.EntityFrameworkCore;
+using RegistrUser.Service.ViewModels.Users;
 using RegistrUser.WebApi.Enums;
 using RegistrUser.WebApi.Exceptions;
 using RegistrUser.WebApi.Extensions;
@@ -6,6 +7,7 @@ using RegistrUser.WebApi.Helpers;
 using RegistrUser.WebApi.Interfaces.Repositories;
 using RegistrUser.WebApi.Interfaces.Services;
 using RegistrUser.WebApi.Models;
+using RegistrUser.WebApi.Repositories;
 using RegistrUser.WebApi.Security;
 using RegistrUser.WebApi.Utills;
 using RegistrUser.WebApi.ViewModels.Users;
@@ -17,21 +19,21 @@ namespace RegistrUser.WebApi.Services
     public class UserService : IUserService
     {
         
-        private readonly IUserRepository _userRepositroy;
+        private readonly IUserRepository _userRepository;
         private readonly IFileService _fileService;
         private readonly IWebHostEnvironment _hostingEnvironment;
 
-        public UserService(IUserRepository userRepositroy, IFileService fileService, 
+        public UserService(IUserRepository userRepository, IFileService fileService, 
             IWebHostEnvironment hostingEnvironment)
         {
-            _userRepositroy = userRepositroy;
+            _userRepository = userRepository;
             _fileService = fileService;
             _hostingEnvironment = hostingEnvironment;
         }
 
         public async Task<bool> DeleteAsync(Expression<Func<User, bool>> expression)
         {
-            var result = await _userRepositroy.GetAsync(expression);
+            var result = await _userRepository.GetAsync(expression);
 
             if (result is null)
                 throw new StatusCodeException(HttpStatusCode.NotFound, message: "RegistrUser not found");
@@ -45,16 +47,16 @@ namespace RegistrUser.WebApi.Services
 
             result.ItemState = ItemState.Inactive;
 
-            await _userRepositroy.UpdateAsync(result);
+            await _userRepository.UpdateAsync(result);
 
-            await _userRepositroy.SaveAsync();
+            await _userRepository.SaveAsync();
 
             return true;
         }
 
         public async Task<bool> DeleteAsync()
         {
-            var user = await _userRepositroy.GetAsync(p => p.Id == HttpContextHelper.UserId);
+            var user = await _userRepository.GetAsync(p => p.Id == HttpContextHelper.UserId);
 
             if (user is null)
                 throw new StatusCodeException(HttpStatusCode.NotFound, message:"RegistrUser not found");
@@ -68,41 +70,27 @@ namespace RegistrUser.WebApi.Services
 
             user.ItemState = ItemState.Inactive;
 
-            await _userRepositroy.UpdateAsync(user);
+            await _userRepository.UpdateAsync(user);
 
-            await _userRepositroy.SaveAsync();
+            await _userRepository.SaveAsync();
 
             return true;
 
 
         }
 
-        public async Task<UserViewModel> GetInfoAsync()
-        {
-            var user = await _userRepositroy.GetAsync(p => p.Id == HttpContextHelper.UserId);
-
-            if (user is null)
-                throw new StatusCodeException(HttpStatusCode.NotFound, message: "RegistrUser not found");
-
-            return (UserViewModel)user;
-        }
         public async Task<IEnumerable<UserViewModel>> GetAllAsync(PaginationParams? pagination = null, Expression<Func<User, bool>>? expression = null)
         {
-            return (from user in _userRepositroy.GetAllAsync(expression)
+            return (from user in _userRepository.GetAllAsync(expression)
                     orderby user.CreatedAt descending
                     select (UserViewModel)user).ToPaged(pagination);
         }
 
         public async Task<UserViewModel> GetAsync(Expression<Func<User, bool>> expression = null)
         {
-            if(expression is null)
-            {
-                expression = p => p.Id == HttpContextHelper.UserId && p.ItemState == ItemState.Active;
-            }
+            var user = await _userRepository.GetAsync(expression);
 
-            var user = await _userRepositroy.GetAsync(expression);
-
-            if (user == null)
+            if (user is null)
                 throw new StatusCodeException(HttpStatusCode.NotFound, message: "RegistrUser not found");
 
             return (UserViewModel)user;
@@ -110,7 +98,7 @@ namespace RegistrUser.WebApi.Services
 
         public async Task<bool> UpdateAsync(UserPatchViewModel model)
         {
-            var user = await _userRepositroy.GetAsync(o => o.Id == HttpContextHelper.UserId && o.ItemState == ItemState.Active);
+            var user = await _userRepository.GetAsync(o => o.Id == HttpContextHelper.UserId && o.ItemState == ItemState.Active);
 
             if (user is null)
                 throw new StatusCodeException(HttpStatusCode.NotFound, message: "RegistrUser not found");
@@ -135,7 +123,7 @@ namespace RegistrUser.WebApi.Services
 
             if (model.Email is not null)
             { 
-                var email = await _userRepositroy.GetAsync(o => o.Email == model.Email); 
+                var email = await _userRepository.GetAsync(o => o.Email == model.Email); 
                 
                 if (user.Id != email.Id)
                     throw new StatusCodeException(HttpStatusCode.BadRequest, message: "Email have already taken");
@@ -143,7 +131,7 @@ namespace RegistrUser.WebApi.Services
 
             if (model.UserName is not null)
             {
-                var username = await _userRepositroy.GetAsync(o => o.UserName == model.UserName);
+                var username = await _userRepository.GetAsync(o => o.UserName == model.UserName);
 
                 if (user.Id != username.Id)
                     throw new StatusCodeException(HttpStatusCode.BadRequest, message: "Username have already taken");
@@ -151,45 +139,13 @@ namespace RegistrUser.WebApi.Services
                 user.UserName = model.UserName;
             }
 
-            await _userRepositroy.UpdateAsync(user);
+            await _userRepository.UpdateAsync(user);
 
-            await _userRepositroy.SaveAsync();
+            await _userRepository.SaveAsync();
 
             return true;
         }
 
-        //public async Task<bool> UpdateAsync(long id, UserCreateViewModel viewModel)
-        //{
-        //    var user = await _userRepositroy.GetAsync(o => o.Id == id && o.ItemState == ItemState.Active);
-
-        //    if (user is null)
-        //        throw new StatusCodeException(HttpStatusCode.NotFound, message: "RegistrUser not found");
-
-        //    if (HttpContextHelper.UserId != id)
-        //        throw new StatusCodeException(HttpStatusCode.BadRequest, message: "must enter correct id");
-
-        //    user.FirstName = viewModel.FirstName;
-        //    user.LastName = viewModel.LastName;
-              
-        //    var username = await _userRepositroy.GetAsync(o => o.UserName == viewModel.UserName);
-        //    if (user.Id != username.Id)
-        //        throw new StatusCodeException(HttpStatusCode.BadRequest, message: "Username have already taken");
-            
-        //    user.UserName = viewModel.UserName;
-            
-        //    var email = await _userRepositroy.GetAsync(o => o.Email == viewModel.Email);
-        //    if (user.Id != email.Id)
-        //        throw new StatusCodeException(HttpStatusCode.BadRequest, message: "Email have already taken");
-            
-        //    user.Email = viewModel.Email;
-
-        //    user.PasswordHash = PasswordHasher.ChangePassword(viewModel.Password, user.Salt);
-
-        //    await _userRepositroy.UpdateAsync(user);
-
-        //    await _userRepositroy.SaveAsync();
-
-        //    return true;
-        //}
+  
     }
 }

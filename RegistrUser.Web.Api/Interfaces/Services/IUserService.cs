@@ -8,18 +8,13 @@ namespace RegistrUser.WebApi.Interfaces.Services
 {
     public interface IUserService
     {
+        Task<IEnumerable<UserViewModel>> GetAllAsync(PaginationParams @params, Expression<Func<User, bool>> expression = null!);
+
         Task<UserViewModel> GetAsync(Expression<Func<User, bool>> expression = null);
 
         Task<bool> DeleteAsync(Expression<Func<User, bool>> expression);
         
-        Task<UserViewModel> GetInfoAsync();
-
-        Task<bool> DeleteAsync();
-
-        //Task<bool> UpdateAsync(long id, UserCreateViewModel model);
-
         Task<bool> UpdateAsync(UserPatchViewModel model);
 
-        Task<IEnumerable<UserViewModel>> GetAllAsync(PaginationParams @params, Expression<Func<User, bool>> expression = null!);
     }
 }

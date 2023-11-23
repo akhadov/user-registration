@@ -20,7 +20,7 @@ namespace RegistrUser.Service.ViewModels.Users
         public uint Code { get; set; }
 
         [Required(ErrorMessage = "Password is required"), MinLength(8), MaxLength(50)]
-        //[StrongPassword]
+
         [JsonPropertyName("password")]
         public string Password { get; set; } = string.Empty;
     }

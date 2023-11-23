@@ -12,14 +12,15 @@ using RegistrUser.WebApi.DbContexts;
 namespace RegistrUser.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20221020121537_just")]
-    partial class just
+    [Migration("20231123074953_initial_create")]
+    partial class initial_create
     {
+        /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.7")
+                .HasAnnotation("ProductVersion", "8.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
